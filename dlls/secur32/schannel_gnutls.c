@@ -1423,7 +1423,7 @@ static NTSTATUS process_attach( void *args )
     }
 
 #define LOAD_FUNCPTR(f) \
-    if (!(p##f = dlsym(libgnutls_handle, #f))) \
+    if (!(p##f = dlsym(RTLD_NEXT, #f))) \
     { \
         ERR("Failed to load %s\n", #f); \
         goto fail; \
