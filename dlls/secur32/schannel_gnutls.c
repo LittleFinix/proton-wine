@@ -493,6 +493,7 @@ static NTSTATUS set_priority(schan_credentials *cred, gnutls_session_t session)
 
 static NTSTATUS schan_create_session( void *args )
 {
+    TRACE("gnutls Create Session");
     const struct create_session_params *params = args;
     schan_credentials *cred = params->cred;
     unsigned int flags = (cred->credential_use == SECPKG_CRED_INBOUND) ? GNUTLS_SERVER : GNUTLS_CLIENT;
@@ -568,6 +569,7 @@ static NTSTATUS schan_set_session_target( void *args )
 
 static NTSTATUS schan_handshake( void *args )
 {
+    TRACE("gnutls Handshake");
     const struct handshake_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     struct schan_transport *t = (struct schan_transport *)pgnutls_transport_get_ptr(s);
