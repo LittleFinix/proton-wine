@@ -51,6 +51,8 @@
 
 #if defined(SONAME_LIBGNUTLS)
 
+#define LOGFUNC() TRACE("[secur32] called " __FUNCTION__)
+
 WINE_DEFAULT_DEBUG_CHANNEL(secur32);
 WINE_DECLARE_DEBUG_CHANNEL(winediag);
 
@@ -148,11 +150,13 @@ MAKE_FUNCPTR(gnutls_alert_send);
 
 static inline gnutls_session_t session_from_handle(UINT64 handle)
 {
+   LOGFUNC();
    return (gnutls_session_t)(ULONG_PTR)handle;
 }
 
 static inline gnutls_certificate_credentials_t certificate_creds_from_handle(UINT64 handle)
 {
+    LOGFUNC();
     return (gnutls_certificate_credentials_t)(ULONG_PTR)handle;
 }
 
@@ -173,6 +177,7 @@ struct schan_transport
 
 static int compat_cipher_get_block_size(gnutls_cipher_algorithm_t cipher)
 {
+    LOGFUNC();
     switch(cipher) {
     case GNUTLS_CIPHER_3DES_CBC:
         return 8;
@@ -197,11 +202,13 @@ static int compat_cipher_get_block_size(gnutls_cipher_algorithm_t cipher)
 static void compat_gnutls_transport_set_pull_timeout_function(gnutls_session_t session,
                                                               int (*func)(gnutls_transport_ptr_t, unsigned int))
 {
+    LOGFUNC();
     FIXME("\n");
 }
 
 static int compat_gnutls_privkey_export_x509(gnutls_privkey_t privkey, gnutls_x509_privkey_t *key)
 {
+    LOGFUNC();
     FIXME("\n");
     return GNUTLS_E_UNKNOWN_PK_ALGORITHM;
 }
@@ -212,12 +219,14 @@ static int compat_gnutls_privkey_import_rsa_raw(gnutls_privkey_t key, const gnut
                                         const gnutls_datum_t *p6, const gnutls_datum_t *p7,
                                         const gnutls_datum_t *p8)
 {
+    LOGFUNC();
     FIXME("\n");
     return GNUTLS_E_UNKNOWN_PK_ALGORITHM;
 }
 
 static int compat_gnutls_alpn_get_selected_protocol(gnutls_session_t session, gnutls_datum_t *protocol)
 {
+    LOGFUNC();
     FIXME("\n");
     return GNUTLS_E_INVALID_REQUEST;
 }
@@ -225,23 +234,27 @@ static int compat_gnutls_alpn_get_selected_protocol(gnutls_session_t session, gn
 static int compat_gnutls_alpn_set_protocols(gnutls_session_t session, const gnutls_datum_t *protocols,
                                             unsigned size, unsigned int flags)
 {
+    LOGFUNC();
     FIXME("\n");
     return GNUTLS_E_INVALID_REQUEST;
 }
 
 static void compat_gnutls_dtls_set_mtu(gnutls_session_t session, unsigned int mtu)
 {
+    LOGFUNC();
     FIXME("\n");
 }
 
 static void compat_gnutls_dtls_set_timeouts(gnutls_session_t session, unsigned int retrans_timeout,
         unsigned int total_timeout)
 {
+    LOGFUNC();
     FIXME("\n");
 }
 
 static void init_schan_buffers(struct schan_buffers *s, const PSecBufferDesc desc)
 {
+    LOGFUNC();
     s->offset = 0;
     s->limit = ~0UL;
     s->desc = desc;
@@ -250,6 +263,7 @@ static void init_schan_buffers(struct schan_buffers *s, const PSecBufferDesc des
 
 static int get_next_buffer(struct schan_buffers *s)
 {
+    LOGFUNC();
     if (s->current_buffer_idx == -1)
         return s->desc->cBuffers ? 0 : -1;
     if (s->current_buffer_idx == s->desc->cBuffers - 1)
@@ -259,6 +273,7 @@ static int get_next_buffer(struct schan_buffers *s)
 
 static char *get_buffer(struct schan_buffers *s, SIZE_T *count)
 {
+    LOGFUNC();
     SIZE_T max_count;
     PSecBuffer buffer;
 
@@ -316,6 +331,7 @@ static char *get_buffer(struct schan_buffers *s, SIZE_T *count)
 
 static ssize_t pull_adapter(gnutls_transport_ptr_t transport, void *buff, size_t buff_len)
 {
+    LOGFUNC();
     struct schan_transport *t = (struct schan_transport*)transport;
     SIZE_T len = buff_len;
     char *b;
@@ -336,6 +352,7 @@ static ssize_t pull_adapter(gnutls_transport_ptr_t transport, void *buff, size_t
 
 static ssize_t push_adapter(gnutls_transport_ptr_t transport, const void *buff, size_t buff_len)
 {
+    LOGFUNC();
     struct schan_transport *t = (struct schan_transport*)transport;
     SIZE_T len = buff_len;
     char *b;
@@ -386,6 +403,7 @@ static DWORD supported_protocols;
 static void check_supported_protocols(
  const struct protocol_priority_flag *flags, int num_flags, BOOLEAN server)
 {
+    LOGFUNC();
     const char *type_desc = server ? "server" : "client";
     gnutls_session_t session;
     char priority[64];
@@ -417,11 +435,13 @@ static void check_supported_protocols(
 
 static NTSTATUS schan_get_enabled_protocols( void *args )
 {
+    LOGFUNC();
     return supported_protocols;
 }
 
 static int pull_timeout(gnutls_transport_ptr_t transport, unsigned int timeout)
 {
+    LOGFUNC();
     struct schan_transport *t = (struct schan_transport*)transport;
     SIZE_T count = 0;
 
@@ -434,6 +454,7 @@ static int pull_timeout(gnutls_transport_ptr_t transport, unsigned int timeout)
 
 static NTSTATUS set_priority(schan_credentials *cred, gnutls_session_t session)
 {
+    LOGFUNC();
     char priority[128] = "NORMAL:%LATEST_RECORD_VERSION", *p;
     BOOL server = !!(cred->credential_use & SECPKG_CRED_INBOUND);
     const struct protocol_priority_flag *protocols =
@@ -493,6 +514,7 @@ static NTSTATUS set_priority(schan_credentials *cred, gnutls_session_t session)
 
 static NTSTATUS schan_create_session( void *args )
 {
+    LOGFUNC();
     TRACE("gnutls Create Session");
     const struct create_session_params *params = args;
     schan_credentials *cred = params->cred;
@@ -550,6 +572,7 @@ static NTSTATUS schan_create_session( void *args )
 
 static NTSTATUS schan_dispose_session( void *args )
 {
+    LOGFUNC();
     const struct session_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     struct schan_transport *t = (struct schan_transport *)pgnutls_transport_get_ptr(s);
@@ -561,6 +584,7 @@ static NTSTATUS schan_dispose_session( void *args )
 
 static NTSTATUS schan_set_session_target( void *args )
 {
+    LOGFUNC();
     const struct set_session_target_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     pgnutls_server_name_set( s, GNUTLS_NAME_DNS, params->target, strlen(params->target) );
@@ -569,6 +593,7 @@ static NTSTATUS schan_set_session_target( void *args )
 
 static NTSTATUS schan_handshake( void *args )
 {
+    LOGFUNC();
     TRACE("gnutls Handshake");
     const struct handshake_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
@@ -650,6 +675,7 @@ done:
 
 static DWORD get_protocol(gnutls_protocol_t proto)
 {
+    LOGFUNC();
     /* FIXME: currently schannel only implements client connections, but
      * there's no reason it couldn't be used for servers as well.  The
      * context doesn't tell us which it is, so assume client for now.
@@ -670,6 +696,7 @@ static DWORD get_protocol(gnutls_protocol_t proto)
 
 static ALG_ID get_cipher_algid(gnutls_cipher_algorithm_t cipher)
 {
+    LOGFUNC();
     switch (cipher)
     {
     case GNUTLS_CIPHER_UNKNOWN:
@@ -692,6 +719,7 @@ static ALG_ID get_cipher_algid(gnutls_cipher_algorithm_t cipher)
 
 static ALG_ID get_mac_algid(gnutls_mac_algorithm_t mac, gnutls_cipher_algorithm_t cipher)
 {
+    LOGFUNC();
     switch (mac)
     {
     case GNUTLS_MAC_UNKNOWN:
@@ -721,6 +749,7 @@ static ALG_ID get_mac_algid(gnutls_mac_algorithm_t mac, gnutls_cipher_algorithm_
 
 static ALG_ID get_kx_algid(int kx)
 {
+    LOGFUNC();
     switch (kx)
     {
     case GNUTLS_KX_UNKNOWN: return 0;
@@ -741,6 +770,7 @@ static ALG_ID get_kx_algid(int kx)
 
 static NTSTATUS schan_get_session_cipher_block_size( void *args )
 {
+    LOGFUNC();
     const struct session_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     return pgnutls_cipher_get_block_size(pgnutls_cipher_get(s));
@@ -748,6 +778,7 @@ static NTSTATUS schan_get_session_cipher_block_size( void *args )
 
 static NTSTATUS schan_get_max_message_size( void *args )
 {
+    LOGFUNC();
     const struct session_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     return pgnutls_record_get_max_size(s);
@@ -755,6 +786,7 @@ static NTSTATUS schan_get_max_message_size( void *args )
 
 static NTSTATUS schan_get_connection_info( void *args )
 {
+    LOGFUNC();
     const struct get_connection_info_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     SecPkgContext_ConnectionInfo *info = params->info;
@@ -776,6 +808,7 @@ static NTSTATUS schan_get_connection_info( void *args )
 
 static DWORD get_protocol_version( gnutls_session_t session )
 {
+    LOGFUNC();
     gnutls_protocol_t proto = pgnutls_protocol_get_version( session );
 
     switch (proto)
@@ -794,6 +827,7 @@ static DWORD get_protocol_version( gnutls_session_t session )
 
 static const WCHAR *get_cipher_str( gnutls_session_t session )
 {
+    LOGFUNC();
     static const WCHAR aesW[] = {'A','E','S',0};
     static const WCHAR unknownW[] = {'<','u','n','k','n','o','w','n','>',0};
     gnutls_cipher_algorithm_t cipher = pgnutls_cipher_get( session );
@@ -816,6 +850,7 @@ static const WCHAR *get_cipher_str( gnutls_session_t session )
 
 static DWORD get_cipher_len( gnutls_session_t session )
 {
+    LOGFUNC();
     gnutls_cipher_algorithm_t cipher = pgnutls_cipher_get( session );
 
     switch (cipher)
@@ -838,12 +873,14 @@ static DWORD get_cipher_len( gnutls_session_t session )
 
 static DWORD get_cipher_block_len( gnutls_session_t session )
 {
+    LOGFUNC();
     gnutls_cipher_algorithm_t cipher = pgnutls_cipher_get( session );
     return pgnutls_cipher_get_block_size( cipher );
 }
 
 static const WCHAR *get_hash_str( gnutls_session_t session, BOOL full )
 {
+    LOGFUNC();
     static const WCHAR shaW[] = {'S','H','A',0};
     static const WCHAR sha1W[] = {'S','H','A','1',0};
     static const WCHAR sha224W[] = {'S','H','A','2','2','4',0};
@@ -868,12 +905,14 @@ static const WCHAR *get_hash_str( gnutls_session_t session, BOOL full )
 
 static DWORD get_hash_len( gnutls_session_t session )
 {
+    LOGFUNC();
     gnutls_mac_algorithm_t mac = pgnutls_mac_get( session );
     return pgnutls_mac_get_key_size( mac ) * 8;
 }
 
 static const WCHAR *get_exchange_str( gnutls_session_t session, BOOL full )
 {
+    LOGFUNC();
     static const WCHAR ecdhW[] = {'E','C','D','H',0};
     static const WCHAR ecdheW[] = {'E','C','D','H','E',0};
     static const WCHAR unknownW[] = {'<','u','n','k','n','o','w','n','>',0};
@@ -892,6 +931,7 @@ static const WCHAR *get_exchange_str( gnutls_session_t session, BOOL full )
 
 static const WCHAR *get_certificate_str( gnutls_session_t session )
 {
+    LOGFUNC();
     static const WCHAR rsaW[] = {'R','S','A',0};
     static const WCHAR ecdsaW[] = {'E','C','D','S','A',0};
     static const WCHAR unknownW[] = {'<','u','n','k','n','o','w','n','>',0};
@@ -912,6 +952,7 @@ static const WCHAR *get_certificate_str( gnutls_session_t session )
 
 static const WCHAR *get_chaining_mode_str( gnutls_session_t session )
 {
+    LOGFUNC();
     static const WCHAR cbcW[] = {'C','B','C',0};
     static const WCHAR ccmW[] = {'C','C','M',0};
     static const WCHAR gcmW[] = {'G','C','M',0};
@@ -938,6 +979,7 @@ static const WCHAR *get_chaining_mode_str( gnutls_session_t session )
 
 static NTSTATUS schan_get_cipher_info( void *args )
 {
+    LOGFUNC();
     const WCHAR tlsW[] = {'T','L','S','_',0};
     const WCHAR underscoreW[] = {'_',0};
     const WCHAR widthW[] = {'_','W','I','T','H','_',0};
@@ -981,6 +1023,7 @@ static NTSTATUS schan_get_cipher_info( void *args )
 
 static NTSTATUS schan_get_unique_channel_binding( void *args )
 {
+    LOGFUNC();
     const struct get_unique_channel_binding_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     gnutls_datum_t datum;
@@ -1007,6 +1050,7 @@ static NTSTATUS schan_get_unique_channel_binding( void *args )
 
 static NTSTATUS schan_get_key_signature_algorithm( void *args )
 {
+    LOGFUNC();
     const struct session_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     gnutls_kx_algorithm_t kx = pgnutls_kx_get(s);
@@ -1029,6 +1073,7 @@ static NTSTATUS schan_get_key_signature_algorithm( void *args )
 
 static NTSTATUS schan_get_session_peer_certificate( void *args )
 {
+    LOGFUNC();
     const struct get_session_peer_certificate_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     const gnutls_datum_t *datum;
@@ -1063,6 +1108,7 @@ static NTSTATUS schan_get_session_peer_certificate( void *args )
 
 static NTSTATUS schan_send( void *args )
 {
+    LOGFUNC();
     const struct send_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     struct schan_transport *t = (struct schan_transport *)pgnutls_transport_get_ptr(s);
@@ -1100,6 +1146,7 @@ static NTSTATUS schan_send( void *args )
 
 static NTSTATUS schan_recv( void *args )
 {
+    LOGFUNC();
     const struct recv_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     struct schan_transport *t = (struct schan_transport *)pgnutls_transport_get_ptr(s);
@@ -1142,6 +1189,7 @@ static NTSTATUS schan_recv( void *args )
 
 static unsigned int parse_alpn_protocol_list(unsigned char *buffer, unsigned int buflen, gnutls_datum_t *list)
 {
+    LOGFUNC();
     unsigned int len, offset = 0, count = 0;
 
     while (buflen)
@@ -1164,6 +1212,7 @@ static unsigned int parse_alpn_protocol_list(unsigned char *buffer, unsigned int
 
 static NTSTATUS schan_set_application_protocols( void *args )
 {
+    LOGFUNC();
     const struct set_application_protocols_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     unsigned int extension_len, extension, count = 0, offset = 0;
@@ -1204,6 +1253,7 @@ static NTSTATUS schan_set_application_protocols( void *args )
 
 static NTSTATUS schan_get_application_protocol( void *args )
 {
+    LOGFUNC();
     const struct get_application_protocol_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
     SecPkgContext_ApplicationProtocol *protocol = params->protocol;
@@ -1225,6 +1275,7 @@ static NTSTATUS schan_get_application_protocol( void *args )
 
 static NTSTATUS schan_set_dtls_mtu( void *args )
 {
+    LOGFUNC();
     const struct set_dtls_mtu_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
 
@@ -1235,6 +1286,7 @@ static NTSTATUS schan_set_dtls_mtu( void *args )
 
 static NTSTATUS schan_set_dtls_timeouts( void *args )
 {
+    LOGFUNC();
     const struct set_dtls_timeouts_params *params = args;
     gnutls_session_t s = session_from_handle(params->session);
 
@@ -1244,6 +1296,7 @@ static NTSTATUS schan_set_dtls_timeouts( void *args )
 
 static inline void reverse_bytes(BYTE *buf, ULONG len)
 {
+    LOGFUNC();
     BYTE tmp;
     ULONG i;
     for (i = 0; i < len / 2; i++)
@@ -1256,6 +1309,7 @@ static inline void reverse_bytes(BYTE *buf, ULONG len)
 
 static ULONG set_component(gnutls_datum_t *comp, BYTE *data, ULONG len, ULONG *buflen)
 {
+    LOGFUNC();
     comp->data = data;
     comp->size = len;
     reverse_bytes(comp->data, comp->size);
@@ -1271,6 +1325,7 @@ static ULONG set_component(gnutls_datum_t *comp, BYTE *data, ULONG len, ULONG *b
 
 static gnutls_x509_privkey_t get_x509_key(ULONG key_size, const BYTE *key_blob)
 {
+    LOGFUNC();
     gnutls_privkey_t key = NULL;
     gnutls_x509_privkey_t x509key = NULL;
     gnutls_datum_t m, e, d, p, q, u, e1, e2;
@@ -1315,6 +1370,7 @@ static gnutls_x509_privkey_t get_x509_key(ULONG key_size, const BYTE *key_blob)
 
 static gnutls_x509_crt_t get_x509_crt(const struct allocate_certificate_credentials_params *params)
 {
+    LOGFUNC();
     gnutls_datum_t data;
     gnutls_x509_crt_t crt;
     int ret;
@@ -1345,6 +1401,7 @@ static gnutls_x509_crt_t get_x509_crt(const struct allocate_certificate_credenti
 
 static NTSTATUS schan_allocate_certificate_credentials( void *args )
 {
+    LOGFUNC();
     const struct allocate_certificate_credentials_params *params = args;
     gnutls_certificate_credentials_t creds;
     gnutls_x509_crt_t crt;
@@ -1393,6 +1450,7 @@ static NTSTATUS schan_allocate_certificate_credentials( void *args )
 
 static NTSTATUS schan_free_certificate_credentials( void *args )
 {
+    LOGFUNC();
     const struct free_certificate_credentials_params *params = args;
     pgnutls_certificate_free_credentials(certificate_creds_from_handle(params->c->credentials));
     return STATUS_SUCCESS;
@@ -1405,6 +1463,7 @@ static void gnutls_log(int level, const char *msg)
 
 static NTSTATUS process_attach( void *args )
 {
+    LOGFUNC();
     int ret;
 
     if ((system_priority_file = getenv("GNUTLS_SYSTEM_PRIORITY_FILE")))
@@ -1539,6 +1598,7 @@ fail:
 
 static NTSTATUS process_detach( void *args )
 {
+    LOGFUNC();
     pgnutls_global_deinit();
     dlclose(libgnutls_handle);
     libgnutls_handle = NULL;
@@ -1591,6 +1651,7 @@ typedef struct SecBuffer32
 
 static NTSTATUS wow64_schan_allocate_certificate_credentials( void *args )
 {
+    LOGFUNC();
     struct
     {
         PTR32 c;
@@ -1614,6 +1675,7 @@ static NTSTATUS wow64_schan_allocate_certificate_credentials( void *args )
 
 static NTSTATUS wow64_schan_create_session( void *args )
 {
+    LOGFUNC();
     struct
     {
         PTR32 cred;
@@ -1629,6 +1691,7 @@ static NTSTATUS wow64_schan_create_session( void *args )
 
 static NTSTATUS wow64_schan_free_certificate_credentials( void *args )
 {
+    LOGFUNC();
     struct
     {
         PTR32 c;
@@ -1642,6 +1705,7 @@ static NTSTATUS wow64_schan_free_certificate_credentials( void *args )
 
 static NTSTATUS wow64_schan_get_application_protocol( void *args )
 {
+    LOGFUNC();
     struct
     {
         schan_session session;
@@ -1657,6 +1721,7 @@ static NTSTATUS wow64_schan_get_application_protocol( void *args )
 
 static NTSTATUS wow64_schan_get_connection_info( void *args )
 {
+    LOGFUNC();
     struct
     {
         schan_session session;
@@ -1672,6 +1737,7 @@ static NTSTATUS wow64_schan_get_connection_info( void *args )
 
 static NTSTATUS wow64_schan_get_cipher_info( void *args )
 {
+    LOGFUNC();
     struct
     {
         schan_session session;
@@ -1687,6 +1753,7 @@ static NTSTATUS wow64_schan_get_cipher_info( void *args )
 
 static NTSTATUS wow64_schan_get_session_peer_certificate( void *args )
 {
+    LOGFUNC();
     struct
     {
         schan_session session;
@@ -1706,6 +1773,7 @@ static NTSTATUS wow64_schan_get_session_peer_certificate( void *args )
 
 static NTSTATUS wow64_schan_get_unique_channel_binding( void *args )
 {
+    LOGFUNC();
     struct
     {
         schan_session session;
@@ -1723,6 +1791,7 @@ static NTSTATUS wow64_schan_get_unique_channel_binding( void *args )
 
 static void secbufferdesc_32to64(const SecBufferDesc32 *desc32, SecBufferDesc *desc)
 {
+    LOGFUNC();
     unsigned int i;
 
     desc->ulVersion = desc32->ulVersion;
@@ -1738,6 +1807,7 @@ static void secbufferdesc_32to64(const SecBufferDesc32 *desc32, SecBufferDesc *d
 
 static NTSTATUS wow64_schan_handshake( void *args )
 {
+    LOGFUNC();
     SecBuffer input_buffers[3];
     SecBufferDesc input = { 0, 0, input_buffers };
     SecBuffer output_buffers[3];
@@ -1782,6 +1852,7 @@ static NTSTATUS wow64_schan_handshake( void *args )
 
 static NTSTATUS wow64_schan_recv( void *args )
 {
+    LOGFUNC();
     SecBuffer buffers[3];
     SecBufferDesc input = { 0, 0, buffers };
 
